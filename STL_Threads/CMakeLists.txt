@@ -1,0 +1,6 @@
+cmake_minimum_required (VERSION 3.6)
+project(STLThreads)
+find_package (Threads)
+include_directories(include)
+add_executable (${PROJECT_NAME} src/main.cpp)
+target_link_libraries (${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
