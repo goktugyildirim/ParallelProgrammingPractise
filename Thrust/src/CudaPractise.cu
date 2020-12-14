@@ -1,8 +1,33 @@
 #include "CudaPractise.h"
 
 
-
 namespace CUDA_Interface{
+
+    struct Transform
+    {
+        Transform(thrust::device_vector<float> mat_d)
+        {
+
+        }
+
+        __host__ __device__
+        thrust::tuple<float, float, float>  operator()(const thrust::tuple<float, float, float>& input)
+        {
+            const float& x = thrust::get<0>(input);
+            const float& y = thrust::get<0>(input);
+            const float& z = thrust::get<0>(input);
+
+            /*
+            float x_t = mat_point_transformer[0]*x + mat_point_transformer[1]*y + mat_point_transformer[2]*z + mat_point_transformer[3]*1;
+            float y_t = mat_point_transformer[4]*x + mat_point_transformer[5]*y + mat_point_transformer[6]*z + mat_point_transformer[7]*1;
+            float z_t = mat_point_transformer[8]*x + mat_point_transformer[9]*y + mat_point_transformer[10]*z + mat_point_transformer[11]*1;
+            */
+            return thrust::make_tuple(x,y,z);
+        }
+
+
+    };
+
 
     void transformInDevice(inputType x, inputType y, inputType z, inputType mat_point_transformer)
     {
@@ -23,12 +48,7 @@ namespace CUDA_Interface{
         auto output_end = thrust::make_zip_iterator(thrust::make_tuple(x_d_transformed.end(),
                             y_d_transformed.end(), z_d_transformed.end()));
 
-        auto transform = []()
-        {
-
-        };
-
-
+        thrust::transform(input_begin, input_end, output_begin, Transform(mat_d));
     }
 
 }
