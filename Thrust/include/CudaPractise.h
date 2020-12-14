@@ -15,8 +15,9 @@
 
 namespace CUDA_Interface{
 
-    void transformInDevice();
+    typedef thrust::host_vector<float> inputType;
 
+    void transformInDevice(inputType x, inputType y, inputType z, inputType mat_point_transformer);
 
 }
 

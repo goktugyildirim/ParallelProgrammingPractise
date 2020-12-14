@@ -6,10 +6,8 @@
 void transformInHost(thrust::host_vector<float> x,
                      thrust::host_vector<float> y,
                      thrust::host_vector<float> z,
-                     Eigen::Matrix4f mat_point_transformer
-                     )
+                     Eigen::Matrix4f mat_point_transformer)
 {
-
     auto start = std::chrono::high_resolution_clock::now();
 
     auto input_begin = thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin()));
@@ -19,20 +17,26 @@ void transformInHost(thrust::host_vector<float> x,
     thrust::host_vector<float> transformed_y(x.size());
     thrust::host_vector<float> transformed_z(x.size());
 
-    auto output_begin = thrust::make_zip_iterator(thrust::make_tuple(transformed_x.begin(), transformed_y.begin(), transformed_z.begin()));
-    auto output_end = thrust::make_zip_iterator(thrust::make_tuple(transformed_x.end(), transformed_y.end(), transformed_z.end()));
+    auto output_begin = thrust::make_zip_iterator(thrust::make_tuple(transformed_x.begin(),
+                                      transformed_y.begin(), transformed_z.begin()));
+    auto output_end = thrust::make_zip_iterator(thrust::make_tuple(transformed_x.end(),
+                                      transformed_y.end(), transformed_z.end()));
 
-    auto transform = [mat_point_transformer](const auto& input)-> thrust::tuple<float, float, float>
+    auto transform = [mat_point_transformer](const auto& input)
+    -> thrust::tuple<float, float, float>
     {
-        float x = thrust::get<0>(input);
-        float y = thrust::get<0>(input);
-        float z = thrust::get<0>(input);
+        const float& x = thrust::get<0>(input);
+        const float& y = thrust::get<0>(input);
+        const float& z = thrust::get<0>(input);
 
         auto m = mat_point_transformer.matrix();
 
-        float x_t = m.coeff(0,0)*x + m.coeff(0,1)*y + m.coeff(0,2)*z + m.coeff(0,3)*1;
-        float y_t = m.coeff(1,0)*x + m.coeff(1,1)*y + m.coeff(1,2)*z + m.coeff(1,3)*1;
-        float z_t = m.coeff(2,0)*x + m.coeff(2,1)*y + m.coeff(2,2)*z + m.coeff(2,3)*1;
+        float x_t = m.coeff(0,0)*x + m.coeff(0,1)*y
+                +   m.coeff(0,2)*z + m.coeff(0,3)*1;
+        float y_t = m.coeff(1,0)*x + m.coeff(1,1)*y
+                +   m.coeff(1,2)*z + m.coeff(1,3)*1;
+        float z_t = m.coeff(2,0)*x + m.coeff(2,1)*y
+                + m.coeff(2,2)*z + m.coeff(2,3)*1;
 
         return thrust::make_tuple(x_t, y_t, z_t);
     };
@@ -42,7 +46,7 @@ void transformInHost(thrust::host_vector<float> x,
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
-    std::cout << "Cloud is transformed. Time: " <<  duration.count() << " microseconds." <<  std::endl;
+    std::cout << "Cloud is transformed in the host. Time: " <<  duration.count() << " microseconds." <<  std::endl;
 }
 
 int main()
@@ -70,16 +74,17 @@ int main()
         z.push_back(mat2.matrix().coeff(0,0));
     }
 
-
     transformInHost(x, y, z, mat1);
 
+    thrust::host_vector<float> mat_point_transformer(16);
+    for(int i=0; i<4; i++){
+        for(int j=0; j<4; j++)
+        {
+            mat_point_transformer.push_back(mat1.matrix().coeff(i,j));
+        }
+    }
 
-
-    //CUDA_Interface::transformInDevice();
-
-
-
-
+    CUDA_Interface::transformInDevice(x, y, z, mat_point_transformer);
 
 
 return 0;
