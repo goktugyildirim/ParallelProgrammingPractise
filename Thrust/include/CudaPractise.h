@@ -11,6 +11,7 @@
 #include <thrust/device_vector.h>
 #include <thrust/functional.h>
 #include <thrust/execution_policy.h>
+#include <thrust/iterator/zip_iterator.h>
 
 namespace CUDA_Interface{
 
