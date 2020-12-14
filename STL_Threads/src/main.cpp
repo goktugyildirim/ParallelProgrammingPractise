@@ -18,14 +18,13 @@ public:
 
         std::mutex m;
 
-
         std::thread thread_1([&shared_data, &m](){return F1(2,shared_data, m);});
-        std::thread thread_2(&MyClass::F2, this, 2, std::ref(shared_data));
+        std::thread thread_2(&MyClass::F2, this, 2, std::ref(shared_data), std::ref(m));
 
         thread_2.join();
         thread_1.join();
-
     }
+
 
     static void F1(const int& input1, std::vector<int>& shared_data, std::mutex& m)
     {
@@ -34,21 +33,20 @@ public:
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         std::lock_guard<std::mutex> guard(m);
-        std::scoped_lock
+        
         shared_data.push_back(6);
 
         std::cout << "Done1." << std::endl;
-
-
     }
 
 
-
-    void F2(const int& input1, std::vector<int>& shared_data)
+    void F2(const int& input1, std::vector<int>& shared_data, std::mutex& m)
     {
         std::cout << "F2 is executed." << std::endl;
 
-        for(int i=0; i<10000000000; i++)
+        std::lock_guard<std::mutex> guard(m);
+
+        for(int i=0; i<100000000; i++)
             shared_data.push_back(i);
 
         std::cout << shared_data.size() << std::endl;
